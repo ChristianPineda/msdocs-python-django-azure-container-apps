@@ -1,0 +1,42 @@
+name: Trigger auto deployment for my-container-django-app
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/my-container-django-app-AutoDeployTrigger-e0441183-403a-441f-9b08-d2f59a06cba2.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.MYCONTAINERDJANGOAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: djangocontainerr.azurecr.io
+          registryUsername: ${{ secrets.MYCONTAINERDJANGOAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.MYCONTAINERDJANGOAPP_REGISTRY_PASSWORD }}
+          containerAppName: my-container-django-app
+          resourceGroup: my-django-apps
+          imageToBuild: djangocontainerr.azurecr.io/my-container-django-app:${{ github.sha }}
+          
+
+     
+
